@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using UrlShortner;
+using System.Web;
 
 namespace UrlShortner.Controllers
 {
@@ -15,9 +16,11 @@ namespace UrlShortner.Controllers
     public class ShortnersController : ControllerBase
     {
         private readonly ShortnerContext _context;
-
+        //var _baseurl;
         public ShortnersController(ShortnerContext context)
         {
+           // var req = acc.HttpContext.Request;
+            //var _baseurl= $"{req.Scheme}://{req.Host}";
             _context = context;
         }
 
@@ -78,6 +81,14 @@ namespace UrlShortner.Controllers
         [HttpPost]
         public async Task<ActionResult<Shortner>> PostShortner(Shortner shortner)
         {
+            var env = Environment.GetEnvironmentVariable("applicationUrl");
+            //var baseUrl = string.Format("{ 0}://{1}{2}", Request.Uri.Scheme, Request.Uri.Authority, Url.Content("~"));
+            //HttpRequest Request = HttpContext.Request;
+            //string baseUrl = (Url.Request.RequestUri.GetComponents(
+            //        UriComponents.SchemeAndServer, UriFormat.Unescaped).TrimEnd('/')
+            //     + HttpContext.Current.Request.ApplicationPath).TrimEnd('/');
+            
+            //test part
             Uri urlcheck;
             WebRequest req;
             //bool UrlTest = true;
@@ -111,14 +122,14 @@ namespace UrlShortner.Controllers
                 var rowid = _context.UrlShortner.OrderByDescending(p => p.ID).FirstOrDefault();
                 if (rowid == null)
                 {
-                    shortner.simUrl = "https://localhost:85/api/shortners/" + 1;
+                    shortner.simUrl = "http://simly.azurewebsites.net/api/shortners/" + 1;
                     _context.UrlShortner.Add(shortner);
                     await _context.SaveChangesAsync();
 
                     return CreatedAtAction("GetShortner", new { id = shortner.ID }, shortner);
                 }
                 int shrt = rowid.ID+1;
-                shortner.simUrl = "https://localhost:85/api/shortners/" + shrt;
+                shortner.simUrl = "http://simly.azurewebsites.net/api/shortners/" + shrt;
                 _context.UrlShortner.Add(shortner);
                 await _context.SaveChangesAsync();
 
@@ -152,4 +163,6 @@ namespace UrlShortner.Controllers
             return _context.UrlShortner.Any(e => e.ID == id);
         }
     }
+
+
 }
